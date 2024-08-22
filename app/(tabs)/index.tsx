@@ -32,7 +32,7 @@ export default function HomeScreen() {
       <ThemedView style={styles.stepContainer}>
         <ThemedText type="subtitle">Étape 3 : Conservez vos tâches</ThemedText>
         <ThemedText>
-         Grâce à <ThemedText type="defaultSemiBold">AsyncStorage</ThemedText>, conservez vos tâches ! (Appuyez sur R dans le terminal ou rechargez la page pour voir la nouvelle tâche)
+         Grâce à <ThemedText type="defaultSemiBold">AsyncStorage</ThemedText>, conservez vos tâches !
         </ThemedText>
       </ThemedView>
     </ParallaxScrollView>

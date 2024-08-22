@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, FlatList, StyleSheet, Pressable } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Button from '@/components/Button';
@@ -6,14 +6,11 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { Task } from '@/models/Task';
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function TaskListScreen() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const router = useRouter();
-
-  useEffect(() => {
-    loadTasks();
-  }, []);
 
   const loadTasks = async () => {
     try {
@@ -26,6 +23,12 @@ export default function TaskListScreen() {
       console.error('Erreur lors de la récupération des tâches:', error);
     }
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      loadTasks(); 
+    }, [])
+  );
 
   const deleteTask = async (id: number) => {
     try {
