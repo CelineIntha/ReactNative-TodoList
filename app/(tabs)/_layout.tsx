@@ -30,7 +30,7 @@ export default function TabLayout() {
           options={{
             title: 'Todo',
             tabBarIcon: ({ color, focused }) => (
-              <TabBarIcon name={focused ? 'list-circle-outline' : 'list-outline'} color={color} />
+              <TabBarIcon name={focused ? 'list' : 'list-outline'} color={color} />
             ),
           }}
         />
@@ -39,7 +39,7 @@ export default function TabLayout() {
           options={{
             title: 'Add',
             tabBarIcon: ({ color, focused }) => (
-              <TabBarIcon name={focused ? 'add-outline' : 'add-outline'} color={color} />
+              <TabBarIcon name={focused ? 'add' : 'add-outline'} color={color} />
             ),
           }}
         />

@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, FlatList, StyleSheet, Pressable } from 'react-native';
+import { View, Text, FlatList, StyleSheet, Pressable, TextInput } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Button from '@/components/Button';
 import { useRouter } from 'expo-router';
@@ -10,6 +10,8 @@ import { useFocusEffect } from '@react-navigation/native';
 
 export default function TaskListScreen() {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
+  const [editedTaskTitle, setEditedTaskTitle] = useState<string>('');
   const router = useRouter();
 
   const loadTasks = async () => {
@@ -26,7 +28,7 @@ export default function TaskListScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      loadTasks(); 
+      loadTasks();
     }, [])
   );
 
@@ -40,6 +42,25 @@ export default function TaskListScreen() {
     }
   };
 
+  const startEditingTask = (task: Task) => {
+    setEditingTaskId(task.id);
+    setEditedTaskTitle(task.title);
+  };
+
+  const saveEditedTask = async (taskId: number) => {
+    try {
+      const updatedTasks = tasks.map(task =>
+        task.id === taskId ? { ...task, title: editedTaskTitle } : task
+      );
+      await AsyncStorage.setItem('tasks', JSON.stringify(updatedTasks));
+      setTasks(updatedTasks);
+      setEditingTaskId(null);
+      setEditedTaskTitle('');
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde de la tâche:', error);
+    }
+  };
+
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.container}>
@@ -48,11 +69,35 @@ export default function TaskListScreen() {
           data={tasks}
           renderItem={({ item }) => (
             <View style={styles.taskContainer}>
-              <Text style={styles.taskText}>{item.title}</Text>
-              <Pressable style={styles.deleteButton} onPress={() => deleteTask(item.id)}>
-                <Ionicons name="trash-outline" size={24} color="#ffffff" />
-                <Text style={styles.deleteButtonText}>Supprimer</Text>
-              </Pressable>
+              {editingTaskId === item.id ? (
+                <TextInput
+                  style={styles.input}
+                  value={editedTaskTitle}
+                  onChangeText={setEditedTaskTitle}
+                  onSubmitEditing={() => saveEditedTask(item.id)}
+                />
+              ) : (
+                <Text style={styles.taskText}>{item.title}</Text>
+              )}
+              <View style={styles.buttonGroup}>
+                {editingTaskId === item.id ? (
+                  <Pressable style={styles.saveButton} onPress={() => saveEditedTask(item.id)}>
+                    <Ionicons name="checkmark-outline" size={24} color="#ffffff" />
+                    <Text style={styles.saveButtonText}>Enregistrer</Text>
+                  </Pressable>
+                ) : (
+                  <>
+                    <Pressable style={styles.editButton} onPress={() => startEditingTask(item)}>
+                      <Ionicons name="pencil-outline" size={24} color="#ffffff" />
+                      <Text style={styles.editButtonText}>Modifier</Text>
+                    </Pressable>
+                    <Pressable style={styles.deleteButton} onPress={() => deleteTask(item.id)}>
+                      <Ionicons name="trash-outline" size={24} color="#ffffff" />
+                      <Text style={styles.deleteButtonText}>Supprimer</Text>
+                    </Pressable>
+                  </>
+                )}
+              </View>
             </View>
           )}
           keyExtractor={(item: Task) => item.id.toString()}
@@ -95,6 +140,31 @@ const styles = StyleSheet.create({
     color: '#333',
     flex: 1,
   },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    padding: 8,
+    borderRadius: 5,
+    backgroundColor: '#fff',
+    flex: 1,
+  },
+  buttonGroup: {
+    flexDirection: 'row',
+  },
+  editButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#0A7EA3',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 5,
+    marginRight: 8,
+  },
+  editButtonText: {
+    fontSize: 14,
+    color: '#ffffff',
+    marginLeft: 8,
+  },
   deleteButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -108,10 +178,17 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     marginLeft: 8,
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
+  saveButton: {
+    flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#4CAF50',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 5,
+  },
+  saveButtonText: {
+    fontSize: 14,
+    color: '#ffffff',
+    marginLeft: 8,
   },
 });
